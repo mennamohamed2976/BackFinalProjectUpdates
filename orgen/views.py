@@ -709,9 +709,10 @@ class MinistryDashboardViewSet(viewsets.ViewSet):
                 "alert_type":    a.alert_type,
                 "priority":      a.priority,
                 "read":          a.read,
-                "status":        a.ALERT_Status,
+                "description":   a.description,
+                "alert_status":        a.ALERT_Status,
                 "created_at":    a.created_at.strftime('%Y-%m-%d'),
-                "hospital":      a.sender_hospital.name if a.sender_hospital else None
+                "sender_hospital":      a.sender_hospital.name if a.sender_hospital else None
             }
             for a in alerts_qs
         ]
