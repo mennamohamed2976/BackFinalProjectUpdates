@@ -76,7 +76,20 @@ class HospitalRegisterView(generics.GenericAPIView):
 class UnifiedLoginView(APIView):
     def post(self, request):
         serializer = UnifiedLoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            msg = e.detail.get("message", "حدث خطأ")
+
+            if isinstance(msg, list):
+                msg = msg[0]
+
+            return Response(
+                {"message": msg},
+                status=400
+            )
+
         data = serializer.validated_data
 
         #  Ministry
