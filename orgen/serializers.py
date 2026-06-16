@@ -573,6 +573,7 @@ class UserSerializer(serializers.ModelSerializer):
             "phone":obj.hospital.phone,
             "emergency_phone":obj.hospital.emergency_phone,
             "email":obj.hospital.email,
+            "city":obj.hospital.city,
             "working_hours":obj.hospital.working_hours,
             
         }
