@@ -149,9 +149,7 @@ class UnifiedLoginSerializer(serializers.Serializer):
         user = authenticate(username=identifier, password=password)
 
         if not user:
-            raise serializers.ValidationError({
-                "message": "بيانات المستخدم غير صحيحة"
-            })
+            raise serializers.ValidationError("message": "بيانات المستخدم غير صحيحة")
 
         token, _ = Token.objects.get_or_create(user=user)
 
