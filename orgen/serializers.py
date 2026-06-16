@@ -689,16 +689,10 @@ class PatientMedicalProfileSerializer(serializers.ModelSerializer):
             {"name": uc.disease.name, "severity": uc.severity}
             for uc in obj.patient.chronic_diseases.all()
         ]
-
     def get_hospital_detail(self, obj):
-        if not obj.hospital:
-            return None
-    
-        return {
-            "id": obj.hospital.id,
-            "name": obj.hospital.name,
-            "location": obj.hospital.location,
-        }
+        if obj.patient.hospital:
+            return HospitalSerializer(obj.patient.hospital).data
+        return None
 
     def get_supervisor_doctor_detail(self, obj):
         if obj.patient.supervisor_doctor:
@@ -731,15 +725,10 @@ class DonorMedicalProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_hospital_detail(self, obj):
-        if not obj.hospital:
-            return None
-    
-        return {
-            "id": obj.hospital.id,
-            "name": obj.hospital.name,
-            "location": obj.hospital.location,
-        }
-
+        if obj.donor.hospital:
+            return HospitalSerializer(obj.donor.hospital).data
+        return None
+        
     def get_supervisor_doctor_detail(self, obj):
         if obj.donor.supervisor_doctor:
             return DoctorSerializer(obj.donor.supervisor_doctor).data
