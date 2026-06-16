@@ -39,22 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
-    'cloudinary',
     'orgen',
 ]
-
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'deaum3ii4'),
-    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '352985711753567'),
-    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'wvPsUHc_2CgLIZ-3ydVqxTBD228'),
-}
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -135,9 +125,11 @@ REST_FRAMEWORK = {
 #         'PORT': os.environ.get('MYSQL_PORT', '3306'),
 #     }
 # }
+
+
 DATABASES = {
     "default": dj_database_url.config(
-        default="mysql://root:123456@localhost:3306/db_organ"
+        default="mysql://root:123456@localhost:3306/db_orgen"
     )
 }
 
@@ -176,7 +168,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
+
 #AI MATCHING
 
 # AI_SERVICE_URL = "https://old-profusely-latticed.ngrok-free.app"
