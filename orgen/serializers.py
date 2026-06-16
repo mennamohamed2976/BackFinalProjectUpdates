@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 import datetime
 from rest_framework.authtoken.models import Token
+from rest_framework.exceptions import AuthenticationFailed
 
 
 # register users
@@ -147,9 +148,8 @@ class UnifiedLoginSerializer(serializers.Serializer):
 
         # 3. User (national_id)
         user = authenticate(username=identifier, password=password)
-
         if not user:
-            raise serializers.ValidationError("message": "بيانات المستخدم غير صحيحة")
+            raise AuthenticationFailed("بيانات المستخدم غير صحيحة")
 
         token, _ = Token.objects.get_or_create(user=user)
 
