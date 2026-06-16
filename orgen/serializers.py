@@ -149,7 +149,9 @@ class UnifiedLoginSerializer(serializers.Serializer):
         # 3. User (national_id)
         user = authenticate(username=identifier, password=password)
         if not user:
-            raise AuthenticationFailed("بيانات المستخدم غير صحيحة")
+            raise serializers.ValidationError({
+                "message": "بيانات المستخدم غير صحيحة"
+            })
 
         token, _ = Token.objects.get_or_create(user=user)
 
