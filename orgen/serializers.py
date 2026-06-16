@@ -570,6 +570,11 @@ class UserSerializer(serializers.ModelSerializer):
             "id": obj.hospital.id,
             "name": obj.hospital.name,
             "location": obj.hospital.location,
+            "phone":obj.hospital.phone,
+            "emergency_phone":obj.hospital.emergency_phone,
+            "email":obj.hospital.email,
+            "working_hours":obj.hospital.working_hours,
+            
         }
 
     def get_supervisor_doctors_detail(self, obj):
