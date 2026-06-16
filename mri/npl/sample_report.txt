@@ -1,0 +1,10 @@
+Patient Name: Mohamed Mahmoud
+Age: 25
+Patient ID: 10
+Hospital ID: 20
+
+Findings:
+The right kidney was surgically removed for donation.
+The left kidney appears normal.
+The liver is normal.
+The spleen is present.
