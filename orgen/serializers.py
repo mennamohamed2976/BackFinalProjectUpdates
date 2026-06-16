@@ -563,13 +563,14 @@ class UserSerializer(serializers.ModelSerializer):
         return []
 
     def get_hospital_detail(self, obj):
-        if hasattr(obj, 'patient_profile') and obj.role == 'patient' and obj.hospital:
-
-            return HospitalSerializer(obj.hospital).data
-        elif hasattr(obj, 'donor_profile') and obj.role == 'donor' and obj.hospital:
-
-            return HospitalSerializer(obj.hospital).data
-        return None
+        if not obj.hospital:
+            return None
+    
+        return {
+            "id": obj.hospital.id,
+            "name": obj.hospital.name,
+            "location": obj.hospital.location,
+        }
 
     def get_supervisor_doctors_detail(self, obj):
         if obj.supervisor_doctor:
@@ -685,9 +686,14 @@ class PatientMedicalProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_hospital_detail(self, obj):
-        if obj.patient.hospital:
-            return HospitalSerializer(obj.patient.hospital).data
-        return None
+        if not obj.hospital:
+            return None
+    
+        return {
+            "id": obj.hospital.id,
+            "name": obj.hospital.name,
+            "location": obj.hospital.location,
+        }
 
     def get_supervisor_doctor_detail(self, obj):
         if obj.patient.supervisor_doctor:
@@ -720,9 +726,14 @@ class DonorMedicalProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_hospital_detail(self, obj):
-        if obj.donor.hospital:
-            return HospitalSerializer(obj.donor.hospital).data
-        return None
+        if not obj.hospital:
+            return None
+    
+        return {
+            "id": obj.hospital.id,
+            "name": obj.hospital.name,
+            "location": obj.hospital.location,
+        }
 
     def get_supervisor_doctor_detail(self, obj):
         if obj.donor.supervisor_doctor:
