@@ -43,8 +43,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
+    'cloudinary_storage',
+    'cloudinary',
     'orgen',
 ]
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'deaum3ii4'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '352985711753567'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'wvPsUHc_2CgLIZ-3ydVqxTBD228'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
