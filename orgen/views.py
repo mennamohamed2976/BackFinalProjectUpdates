@@ -1183,7 +1183,7 @@ class VerifyCVNLPViewSet(viewsets.ViewSet):
                     before_scan=before_scan,
                     after_scan=after_scan,
                     npl_report=report,
-                    ai_result={"cv": cv_result, "nlp": nlp_result, "comparison": comparison},
+                    ai_result=str({"cv": cv_result, "nlp": nlp_result, "comparison": comparison}),
                     mismatch_alert=mismatch_alert
                 )
             except User.DoesNotExist:
