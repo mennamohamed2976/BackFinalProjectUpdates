@@ -832,7 +832,7 @@ class HospitalFullSerializer(serializers.ModelSerializer):
         data = []
 
         for patient in patients_qs:
-            patient_data = UserSerializer(patient).data
+            patient_data = UserMiniSerializer(patient).data
             patient_surgeries = [s for s in surgeries_qs if s.organ_matching.patient_id == patient.id]
             patient_data['surgeries'] = SurgerySerializer(patient_surgeries, many=True).data
             patient_matches = [m for m in matches_qs if m.patient_id == patient.id]
@@ -857,7 +857,7 @@ class HospitalFullSerializer(serializers.ModelSerializer):
         data = []
 
         for donor in donors_qs:
-            donor_data = UserSerializer(donor).data
+            donor_data = UserMiniSerializer(donor).data
             donor_matches = [m for m in matches_qs if m.donor_id == donor.id]
             donor_data['matches'] = OrganMatchingSerializer(donor_matches, many=True).data
             donor_alerts = alerts_map.get(donor.id, [])
