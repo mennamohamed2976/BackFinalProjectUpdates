@@ -166,13 +166,43 @@ class UnifiedLoginSerializer(serializers.Serializer):
 # mini serializer for search results
 class UserMiniSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
+    organ_needed = serializers.SerializerMethodField()
+    organ_available = serializers.SerializerMethodField()
+    priority = serializers.SerializerMethodField()
+    health_status = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'full_name', 'role', 'national_id', 'blood_type', 'gender', 'medical_record_number', 'status']
+        fields = ['id', 'full_name','birthdate','organ_needed','organ_available', 'role', 'national_id', 'blood_type', 'gender',
+                  'medical_record_number', 'status','priority','health_status',]
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
+
+    def get_organ_available(self, obj):
+        if obj.role == 'donor' and hasattr(obj, 'donor_profile'):
+            return obj.donor_profile.organ_available
+        return None
+
+    def get_organ_needed(self, obj):
+        if obj.role == 'patient' and hasattr(obj, 'patient_profile'):
+            return obj.patient_profile.organ_needed
+        return None
+
+    def get_priority(self, obj):
+        try:
+            priority = PatientPriority.objects.select_related('patient').get(patient=obj)
+            return PatientPrioritySerializer(priority).data
+        except PatientPriority.DoesNotExist:
+            return None
+        
+    def get_health_status(self, obj):
+        if obj.role != 'donor':
+            return None
+        try:
+            return DonorHealthStatusSerializer(obj.health_status).data
+        except:
+            return None
 
 
 # الحساسيه
