@@ -1020,6 +1020,96 @@ CV_TO_NLP_ORGAN_MAP = {
     "Spleen": "spleen",
 }
 
+# class VerifyCVNLPViewSet(viewsets.ViewSet):
+#     parser_classes = [MultiPartParser, FormParser]
+
+#     def list(self, request):
+#         return Response({
+#             "message": "استخدم POST مع: patient_id, before_scan, after_scan, report"
+#         })
+
+#     def create(self, request):
+#         patient_id = request.data.get("patient_id")
+#         before_scan = request.FILES.get("before_scan")
+#         after_scan = request.FILES.get("after_scan")
+#         report = request.FILES.get("report")
+
+#         if not all([patient_id, before_scan, after_scan, report]):
+#             return Response(
+#                 {"error": "patient_id, before_scan, after_scan, and report are required"},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+
+#         try:
+#             cv_response = requests.post(
+#                 CV_AI_URL,
+#                 data={"patient_id": patient_id},
+#                 files={
+#                     "before_scan": (before_scan.name, before_scan.read(), before_scan.content_type),
+#                     "after_scan": (after_scan.name, after_scan.read(), after_scan.content_type),
+#                 },
+#                 timeout=300
+#             )
+
+#             # nlp_response = requests.post(
+#             #     NLP_AI_URL,
+#             #     files={"report": (report.name, report.read(), report.content_type)},
+#             #     timeout=120
+#             # )
+#             nlp_response = requests.post(
+#                 NLP_AI_URL,
+#                 data={
+#                     "user_type": "patient",
+#                     "user_id": patient_id
+#                 },
+#                 files={"report": (report.name, report.read(), report.content_type)},
+#                 timeout=120
+#             )
+
+#             cv_result = cv_response.json()
+#             nlp_result = nlp_response.json()
+
+#             comparison = {}
+#             mismatch_alert = False
+#             for cv_name, nlp_name in CV_TO_NLP_ORGAN_MAP.items():
+#                 cv_status = cv_result.get("organs", {}).get(cv_name, "unknown")
+#                 nlp_status = nlp_result.get("organs", {}).get(nlp_name, "unknown")
+#                 matched = cv_status == nlp_status
+#                 if not matched:
+#                     mismatch_alert = True
+#                 comparison[nlp_name] = {
+#                     "cv_status": cv_status,
+#                     "nlp_status": nlp_status,
+#                     "matched": matched
+#                 }
+
+#             try:
+#                 patient = User.objects.get(id=patient_id)
+#                 MRIReport.objects.create(
+#                     patient=patient,
+#                     ai_result=str({"cv": cv_result, "nlp": nlp_result, "comparison": comparison}),
+#                     mismatch_alert=mismatch_alert
+#                 )
+#             except User.DoesNotExist:
+#                 pass
+
+#             return Response({
+#                 "status": "success",
+#                 "patient_id": patient_id,
+#                 "mismatch_alert": mismatch_alert,
+#                 "comparison": comparison,
+#                 "cv_result": cv_result,
+#                 "nlp_result": nlp_result
+#             })
+
+#         except requests.exceptions.RequestException as e:
+#             return Response(
+#                 {"error": "Cannot connect to AI services", "details": str(e)},
+#                 status=status.HTTP_503_SERVICE_UNAVAILABLE
+#             )
+
+
+
 class VerifyCVNLPViewSet(viewsets.ViewSet):
     parser_classes = [MultiPartParser, FormParser]
 
@@ -1041,28 +1131,31 @@ class VerifyCVNLPViewSet(viewsets.ViewSet):
             )
 
         try:
+            before_scan_bytes = before_scan.read()
+            after_scan_bytes = after_scan.read()
+            report_bytes = report.read()
+
+            before_scan.seek(0)
+            after_scan.seek(0)
+            report.seek(0)
+
             cv_response = requests.post(
                 CV_AI_URL,
                 data={"patient_id": patient_id},
                 files={
-                    "before_scan": (before_scan.name, before_scan.read(), before_scan.content_type),
-                    "after_scan": (after_scan.name, after_scan.read(), after_scan.content_type),
+                    "before_scan": (before_scan.name, before_scan_bytes, before_scan.content_type),
+                    "after_scan": (after_scan.name, after_scan_bytes, after_scan.content_type),
                 },
                 timeout=300
             )
 
-            # nlp_response = requests.post(
-            #     NLP_AI_URL,
-            #     files={"report": (report.name, report.read(), report.content_type)},
-            #     timeout=120
-            # )
             nlp_response = requests.post(
                 NLP_AI_URL,
                 data={
                     "user_type": "patient",
                     "user_id": patient_id
                 },
-                files={"report": (report.name, report.read(), report.content_type)},
+                files={"report": (report.name, report_bytes, report.content_type)},
                 timeout=120
             )
 
@@ -1087,7 +1180,10 @@ class VerifyCVNLPViewSet(viewsets.ViewSet):
                 patient = User.objects.get(id=patient_id)
                 MRIReport.objects.create(
                     patient=patient,
-                    ai_result=str({"cv": cv_result, "nlp": nlp_result, "comparison": comparison}),
+                    before_scan=before_scan,
+                    after_scan=after_scan,
+                    npl_report=report,
+                    ai_result={"cv": cv_result, "nlp": nlp_result, "comparison": comparison},
                     mismatch_alert=mismatch_alert
                 )
             except User.DoesNotExist:
