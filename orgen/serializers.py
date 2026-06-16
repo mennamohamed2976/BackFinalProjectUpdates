@@ -867,16 +867,16 @@ class HospitalFullSerializer(serializers.ModelSerializer):
         ).count()
 
     def get_scheduled_surgeries_count(self, obj):
-        return Surgery.objects.filter(hospital=obj, status='مجدولة').count()
+        return Surgery.objects.filter(hospital=obj, status='scheduled').count()
 
     def get_ongoing_surgeries_count(self, obj):
-        return Surgery.objects.filter(hospital=obj, status='جاريه').count()
+        return Surgery.objects.filter(hospital=obj, status='in_progress').count()
 
     def get_completed_surgeries_count(self, obj):
-        return Surgery.objects.filter(hospital=obj, status='مكتملة').count()
+        return Surgery.objects.filter(hospital=obj, status='successful').count()
 
     def get_under_review_surgeries_count(self, obj):
-        return Surgery.objects.filter(hospital=obj, status='تحت المتابعة').count()
+        return Surgery.objects.filter(hospital=obj, status='under_follow-up').count()
 
     def get_analysis_matches_count(self, obj):
         return OrganMatching.objects.filter(
