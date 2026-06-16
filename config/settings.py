@@ -172,10 +172,14 @@ STATIC_URL = 'static/'
 #AI MATCHING
 
 # AI_SERVICE_URL = "https://old-profusely-latticed.ngrok-free.app"
-AI_SERVICE_URL = "https://stods-ai-matching-production.up.railway.app/"
+AI_SERVICE_URL = "https://stods-ai-matching-production.up.railway.app"
 
 # NLP_AI_URL = "http://localhost:8001/analyze-report"
 # CV_AI_URL = "http://localhost:8002/predict"
 
 NLP_AI_URL = "https://nlpendpoint-production.up.railway.app/analyze-report"
 CV_AI_URL = "https://stodscvendpoint-production.up.railway.app/predict"
+
+
+
+
