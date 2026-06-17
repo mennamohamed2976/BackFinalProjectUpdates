@@ -978,10 +978,29 @@ class PatientCreateViewSet(viewsets.ModelViewSet):
             return PatientCreateSerializer
         return UserSerializer 
 
+    # def create(self, request, *args, **kwargs):
+    #     serializer = PatientCreateSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         user = serializer.save()
+    #         token, _ = Token.objects.get_or_create(user=user)
+    #         return Response({
+    #             "message": "تم إنشاء المريض بنجاح",
+    #             "id": user.id,
+    #             "role": user.role,
+    #             "token": token.key,
+    #         }, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def create(self, request, *args, **kwargs):
         serializer = PatientCreateSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except Exception as e:
+                return Response(
+                    {"message": "فشل إنشاء المريض", "error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             token, _ = Token.objects.get_or_create(user=user)
             return Response({
                 "message": "تم إنشاء المريض بنجاح",
