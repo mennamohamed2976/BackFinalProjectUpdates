@@ -166,7 +166,7 @@ USE_I18N = True
 USE_TZ = True
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'deaum3ii4'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'datx9dr9m'),
     'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
