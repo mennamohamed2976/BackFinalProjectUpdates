@@ -1129,146 +1129,104 @@ class VitalSignsSerializer(serializers.ModelSerializer):
 
 #         return user
 
-
 class PatientCreateSerializer(serializers.Serializer):
-    # ====== Basic Info ======
+    # بيانات أساسية
     national_id = serializers.CharField(max_length=14)
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     birthdate = serializers.DateField()
-
     height_cm = serializers.FloatField(required=False, allow_null=True)
     weight_kg = serializers.FloatField(required=False, allow_null=True)
+    blood_type = serializers.ChoiceField(choices=[
+        ('A', 'A'),
+        ('B', 'B'),
+        ('O', 'O'),
+        ('AB', 'AB'), ('AB', 'AB'),
+        ])
 
-    blood_type = serializers.ChoiceField(
-        choices=[('A','A'),('B','B'),('O','O'),('AB','AB')]
-    )
-
-    gender = serializers.ChoiceField(
-        choices=[('male','male'), ('female','female')]
-    )
-
-    phone = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    email = serializers.EmailField(required=False, allow_null=True, allow_blank=True)
+    gender = serializers.ChoiceField(choices=[('male','male'),('female','female')])
+    phone = serializers.CharField(required=False, allow_null=True)
+    email = serializers.EmailField(required=False, allow_null=True)
     city = serializers.CharField(required=False, default='القاهرة')
-
     medical_record_number = serializers.CharField()
-
-    hospital = serializers.PrimaryKeyRelatedField(
-        queryset=Hospital.objects.all()
-    )
-
+    hospital = serializers.PrimaryKeyRelatedField(queryset=Hospital.objects.all())
     supervisor_doctor = serializers.PrimaryKeyRelatedField(
-        queryset=Doctor.objects.all(),
-        required=False,
-        allow_null=True
+        queryset=Doctor.objects.all(), required=False, allow_null=True
     )
-
-    # ====== HLA ======
-    HLA_A_1 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    HLA_A_2 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    HLA_B_1 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    HLA_B_2 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    HLA_DR_1 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    HLA_DR_2 = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-
+    HLA_A_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    HLA_A_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    HLA_B_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    HLA_B_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    HLA_DR_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    HLA_DR_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     PRA = serializers.FloatField(required=False, allow_null=True)
     CMV_status = serializers.BooleanField(required=False, default=False)
     EBV_status = serializers.BooleanField(required=False, default=False)
 
-    # ====== Patient Specific ======
+    # ====== Patient Profile ======
     organ = serializers.ChoiceField(choices=OrganType.choices)
-
     urgency_level = serializers.ChoiceField(
-        choices=[
-            ('low','Low'),
-            ('medium','Medium'),
-            ('high','High'),
-            ('critical','Critical')
-        ],
-        required=False,
-        allow_null=True
+        choices=[('low','Low'),('medium','Medium'),('high','High'),('critical','Critical')],
+        required=False, allow_null=True
     )
-
     waitlist_time_days = serializers.IntegerField(required=False, allow_null=True)
     dialysis_duration_days = serializers.IntegerField(required=False, allow_null=True)
     MELD_score = serializers.FloatField(required=False, allow_null=True)
     lung_severity_score = serializers.FloatField(required=False, allow_null=True)
     recipient_id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
-    # ====== Related Data ======
-    chronic_diseases = serializers.ListField(child=serializers.DictField(), required=False, default=[])
-    allergies = serializers.ListField(child=serializers.DictField(), required=False, default=[])
-    medicines = serializers.ListField(child=serializers.DictField(), required=False, default=[])
+    # ====== أمراض + حساسية + أدوية ======
+    chronic_diseases = serializers.ListField(
+        child=serializers.DictField(), required=False, default=[]
+    )
+    allergies = serializers.ListField(
+        child=serializers.DictField(), required=False, default=[]
+    )
+    medicines = serializers.ListField(
+        child=serializers.DictField(), required=False, default=[]
+    )
 
     def validate_national_id(self, value):
         if len(value) != 14 or not value.isdigit():
             raise serializers.ValidationError("الرقم القومي لازم يكون 14 رقم")
-
         if User.objects.filter(national_id=value).exists():
             raise serializers.ValidationError("الرقم القومي موجود بالفعل")
-
         return value
 
     def create(self, validated_data):
-
-        # ===== Clean empty strings =====
-        for k in list(validated_data.keys()):
-            if validated_data[k] == '':
-                validated_data[k] = None
-
-        # ===== Extract data =====
         organ = validated_data.pop('organ')
-
         chronic_diseases_data = validated_data.pop('chronic_diseases', [])
         allergies_data = validated_data.pop('allergies', [])
         medicines_data = validated_data.pop('medicines', [])
 
         profile_fields = [
-            'urgency_level',
-            'waitlist_time_days',
-            'dialysis_duration_days',
-            'MELD_score',
-            'lung_severity_score',
-            'recipient_id'
+            'urgency_level', 'waitlist_time_days', 'dialysis_duration_days',
+            'MELD_score', 'lung_severity_score', 'recipient_id'
         ]
-
         profile_data = {}
         for field in profile_fields:
             if field in validated_data:
                 profile_data[field] = validated_data.pop(field)
 
-        # ===== Create User =====
         password = validated_data['national_id'][-4:]
-
-        user = User.objects.create(
-            role='patient',
-            **validated_data
-        )
-
+        user = User.objects.create(role='patient', **validated_data)
         user.set_password(password)
         user.save()
 
-        # ===== Create Patient Profile =====
         PatientMedicalProfile.objects.create(
-            patient=user,
-            organ_needed=organ,
-            **profile_data
+            patient=user, organ_needed=organ, **profile_data
         )
 
-        # ===== Chronic Diseases =====
         for d in chronic_diseases_data:
             try:
                 disease = ChronicDisease.objects.get(id=d['disease_id'])
                 UserChronicDisease.objects.create(
-                    user=user,
-                    disease=disease,
+                    user=user, disease=disease,
                     severity=d.get('severity', 'متوسط')
                 )
             except ChronicDisease.DoesNotExist:
                 pass
 
-        # ===== Allergies =====
         for a in allergies_data:
             Allergy.objects.create(
                 user=user,
@@ -1276,7 +1234,6 @@ class PatientCreateSerializer(serializers.Serializer):
                 severity=a.get('severity', 'منخفض')
             )
 
-        # ===== Medicines =====
         for m in medicines_data:
             Medicine.objects.create(
                 user=user,
