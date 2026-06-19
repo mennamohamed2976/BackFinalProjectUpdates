@@ -969,6 +969,73 @@ class VitalSignsViewSet(viewsets.ModelViewSet):
 
 
 
+# class PatientCreateViewSet(viewsets.ModelViewSet):
+#     queryset = User.objects.filter(role='patient')
+#     http_method_names = ['get', 'post']
+
+#     def get_serializer_class(self):
+#         if self.action == 'create':  
+#             return PatientCreateSerializer
+#         return UserSerializer 
+
+#     # def create(self, request, *args, **kwargs):
+#     #     serializer = PatientCreateSerializer(data=request.data)
+#     #     if serializer.is_valid():
+#     #         user = serializer.save()
+#     #         token, _ = Token.objects.get_or_create(user=user)
+#     #         return Response({
+#     #             "message": "تم إنشاء المريض بنجاح",
+#     #             "id": user.id,
+#     #             "role": user.role,
+#     #             "token": token.key,
+#     #         }, status=status.HTTP_201_CREATED)
+#     #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = PatientCreateSerializer(data=request.data)
+#         if serializer.is_valid():
+#             try:
+#                 user = serializer.save()
+#             except Exception as e:
+#                 return Response(
+#                     {"message": "فشل إنشاء المريض", "error": str(e)},
+#                     status=status.HTTP_400_BAD_REQUEST
+#                 )
+#             token, _ = Token.objects.get_or_create(user=user)
+#             return Response({
+#                 "message": "تم إنشاء المريض بنجاح",
+#                 "id": user.id,
+#                 "role": user.role,
+#                 "token": token.key,
+#             }, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class DonorCreateViewSet(viewsets.ModelViewSet):
+#     queryset = User.objects.filter(role='donor')
+#     http_method_names = ['get', 'post']
+
+#     def get_serializer_class(self):
+#         if self.action == 'create':  
+#             return DonorCreateSerializer
+#         return UserSerializer 
+
+#     def create(self, request, *args, **kwargs):
+#         serializer = DonorCreateSerializer(data=request.data)
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             token, _ = Token.objects.get_or_create(user=user)
+#             trigger_ai_matching(user)
+
+
+#             return Response({
+#                 "message": "تم إنشاء المتبرع بنجاح",
+#                 "id": user.id,
+#                 "role": user.role,
+#                 "token": token.key,
+#             }, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class PatientCreateViewSet(viewsets.ModelViewSet):
     queryset = User.objects.filter(role='patient')
     http_method_names = ['get', 'post']
@@ -978,24 +1045,16 @@ class PatientCreateViewSet(viewsets.ModelViewSet):
             return PatientCreateSerializer
         return UserSerializer 
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = PatientCreateSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         user = serializer.save()
-    #         token, _ = Token.objects.get_or_create(user=user)
-    #         return Response({
-    #             "message": "تم إنشاء المريض بنجاح",
-    #             "id": user.id,
-    #             "role": user.role,
-    #             "token": token.key,
-    #         }, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def create(self, request, *args, **kwargs):
         serializer = PatientCreateSerializer(data=request.data)
         if serializer.is_valid():
             try:
                 user = serializer.save()
+            except DjangoValidationError as e:
+                return Response(
+                    {"message": "فشل إنشاء المريض", "error": e.message_dict if hasattr(e, 'message_dict') else e.messages},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             except Exception as e:
                 return Response(
                     {"message": "فشل إنشاء المريض", "error": str(e)},
@@ -1019,14 +1078,24 @@ class DonorCreateViewSet(viewsets.ModelViewSet):
         if self.action == 'create':  
             return DonorCreateSerializer
         return UserSerializer 
-
+    
     def create(self, request, *args, **kwargs):
         serializer = DonorCreateSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            try:
+                user = serializer.save()
+            except DjangoValidationError as e:
+                return Response(
+                    {"message": "فشل إنشاء المتبرع", "error": e.message_dict if hasattr(e, 'message_dict') else e.messages},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            except Exception as e:
+                return Response(
+                    {"message": "فشل إنشاء المتبرع", "error": str(e)},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             token, _ = Token.objects.get_or_create(user=user)
             trigger_ai_matching(user)
-
 
             return Response({
                 "message": "تم إنشاء المتبرع بنجاح",
@@ -1035,8 +1104,6 @@ class DonorCreateViewSet(viewsets.ModelViewSet):
                 "token": token.key,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-
 
 
 
