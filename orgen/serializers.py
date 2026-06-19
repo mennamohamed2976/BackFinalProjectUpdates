@@ -1129,21 +1129,232 @@ class VitalSignsSerializer(serializers.ModelSerializer):
 
 #         return user
 
+# class PatientCreateSerializer(serializers.Serializer):
+#     # بيانات أساسية
+#     national_id = serializers.CharField(max_length=14)
+#     first_name = serializers.CharField(max_length=50)
+#     last_name = serializers.CharField(max_length=50)
+#     birthdate = serializers.DateField()
+#     height_cm = serializers.FloatField(required=False, allow_null=True)
+#     weight_kg = serializers.FloatField(required=False, allow_null=True)
+#     blood_type = serializers.ChoiceField(choices=[
+#         ('A', 'A'),
+#         ('B', 'B'),
+#         ('O', 'O'),
+#         ('AB', 'AB'), ('AB', 'AB'),
+#         ])
+
+#     gender = serializers.ChoiceField(choices=[('male','male'),('female','female')])
+#     phone = serializers.CharField(required=False, allow_null=True)
+#     email = serializers.EmailField(required=False, allow_null=True)
+#     city = serializers.CharField(required=False, default='القاهرة')
+#     medical_record_number = serializers.CharField()
+#     hospital = serializers.PrimaryKeyRelatedField(queryset=Hospital.objects.all())
+#     supervisor_doctor = serializers.PrimaryKeyRelatedField(
+#         queryset=Doctor.objects.all(), required=False, allow_null=True
+#     )
+#     HLA_A_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_A_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_B_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_B_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_DR_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_DR_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     PRA = serializers.FloatField(required=False, allow_null=True)
+#     CMV_status = serializers.BooleanField(required=False, default=False)
+#     EBV_status = serializers.BooleanField(required=False, default=False)
+
+#     # ====== Patient Profile ======
+#     organ = serializers.ChoiceField(choices=OrganType.choices)
+#     urgency_level = serializers.ChoiceField(
+#         choices=[('low','Low'),('medium','Medium'),('high','High'),('critical','Critical')],
+#         required=False, allow_null=True
+#     )
+#     waitlist_time_days = serializers.IntegerField(required=False, allow_null=True)
+#     dialysis_duration_days = serializers.IntegerField(required=False, allow_null=True)
+#     MELD_score = serializers.FloatField(required=False, allow_null=True)
+#     lung_severity_score = serializers.FloatField(required=False, allow_null=True)
+#     recipient_id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+
+#     # ====== أمراض + حساسية + أدوية ======
+#     chronic_diseases = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+#     allergies = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+#     medicines = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+
+#     def validate_national_id(self, value):
+#         if len(value) != 14 or not value.isdigit():
+#             raise serializers.ValidationError("الرقم القومي لازم يكون 14 رقم")
+#         if User.objects.filter(national_id=value).exists():
+#             raise serializers.ValidationError("الرقم القومي موجود بالفعل")
+#         return value
+
+#     def create(self, validated_data):
+#         organ = validated_data.pop('organ')
+#         chronic_diseases_data = validated_data.pop('chronic_diseases', [])
+#         allergies_data = validated_data.pop('allergies', [])
+#         medicines_data = validated_data.pop('medicines', [])
+
+#         profile_fields = [
+#             'urgency_level', 'waitlist_time_days', 'dialysis_duration_days',
+#             'MELD_score', 'lung_severity_score', 'recipient_id'
+#         ]
+#         profile_data = {}
+#         for field in profile_fields:
+#             if field in validated_data:
+#                 profile_data[field] = validated_data.pop(field)
+
+#         password = validated_data['national_id'][-4:]
+#         user = User.objects.create(role='patient', **validated_data)
+#         user.set_password(password)
+#         user.save()
+
+#         PatientMedicalProfile.objects.create(
+#             patient=user, organ_needed=organ, **profile_data
+#         )
+
+#         for d in chronic_diseases_data:
+#             try:
+#                 disease = ChronicDisease.objects.get(id=d['disease_id'])
+#                 UserChronicDisease.objects.create(
+#                     user=user, disease=disease,
+#                     severity=d.get('severity', 'متوسط')
+#                 )
+#             except ChronicDisease.DoesNotExist:
+#                 pass
+
+#         for a in allergies_data:
+#             Allergy.objects.create(
+#                 user=user,
+#                 name=a.get('name', ''),
+#                 severity=a.get('severity', 'منخفض')
+#             )
+
+#         for m in medicines_data:
+#             Medicine.objects.create(
+#                 user=user,
+#                 name=m.get('name', ''),
+#                 frequency_per_day=m.get('frequency_per_day', 1),
+#                 notes=m.get('notes', '')
+#             )
+
+#         return user
+
+# class DonorCreateSerializer(serializers.Serializer):
+#     national_id = serializers.CharField(max_length=14)
+#     first_name = serializers.CharField(max_length=50)
+#     last_name = serializers.CharField(max_length=50)
+#     birthdate = serializers.DateField()
+#     height_cm = serializers.FloatField(required=False, allow_null=True)
+#     weight_kg = serializers.FloatField(required=False, allow_null=True)
+#     blood_type = serializers.ChoiceField(choices=[('A','A'),('B','B'),('O','O'),('AB','AB')])
+#     gender = serializers.ChoiceField(choices=[('male','male'),('female','female')])
+#     phone = serializers.CharField(required=False, allow_null=True)
+#     email = serializers.EmailField(required=False, allow_null=True)
+#     city = serializers.CharField(required=False, default='القاهرة')
+#     medical_record_number = serializers.CharField()
+#     hospital = serializers.PrimaryKeyRelatedField(queryset=Hospital.objects.all())
+#     supervisor_doctor = serializers.PrimaryKeyRelatedField(
+#         queryset=Doctor.objects.all(), required=False, allow_null=True
+#     )
+#     HLA_A_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_A_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_B_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_B_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_DR_1 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     HLA_DR_2 = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     PRA = serializers.FloatField(required=False, allow_null=True)
+#     CMV_status = serializers.BooleanField(required=False, default=False)
+#     EBV_status = serializers.BooleanField(required=False, default=False)
+#     organ = serializers.ChoiceField(choices=OrganType.choices)
+#     donation_type = serializers.ChoiceField(
+#         choices=[('living','Living'),('deceased','Deceased')],
+#         required=False, default='living'
+#     )
+#     kdpi_score = serializers.FloatField(required=False, allow_null=True)
+#     donor_code = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+#     organ_full_or_partial = serializers.ChoiceField(
+#         choices=[('full','Full'),('segment','Segment'),('lobe','Lobe')],
+#         required=False, default='full'
+#     )
+#     chronic_diseases = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+#     allergies = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+#     medicines = serializers.ListField(
+#         child=serializers.DictField(), required=False, default=[]
+#     )
+
+#     def validate_national_id(self, value):
+#         if len(value) != 14 or not value.isdigit():
+#             raise serializers.ValidationError("الرقم القومي لازم يكون 14 رقم")
+#         if User.objects.filter(national_id=value).exists():
+#             raise serializers.ValidationError("الرقم القومي موجود بالفعل")
+#         return value
+
+#     def create(self, validated_data):
+#         organ = validated_data.pop('organ')
+#         chronic_diseases_data = validated_data.pop('chronic_diseases', [])
+#         allergies_data = validated_data.pop('allergies', [])
+#         medicines_data = validated_data.pop('medicines', [])
+
+#         profile_fields = [
+#             'donation_type', 'kdpi_score', 'donor_code','organ_full_or_partial'
+#         ]
+#         profile_data = {}
+#         for field in profile_fields:
+#             if field in validated_data:
+#                 profile_data[field] = validated_data.pop(field)
+
+#         password = validated_data['national_id'][-4:]
+#         user = User.objects.create(role='donor', **validated_data)
+#         user.set_password(password)
+#         user.save()
+
+#         DonorMedicalProfile.objects.create(
+#             donor=user, organ_available=organ, **profile_data
+#         )
+
+#         for d in chronic_diseases_data:
+#             try:
+#                 disease = ChronicDisease.objects.get(id=d['disease_id'])
+#                 UserChronicDisease.objects.create(
+#                     user=user, disease=disease,
+#                     severity=d.get('severity', 'متوسط')
+#                 )
+#             except ChronicDisease.DoesNotExist:
+#                 pass
+
+#         for a in allergies_data:
+#             Allergy.objects.create(
+#                 user=user,
+#                 name=a.get('name', ''),
+#                 severity=a.get('severity', 'منخفض')
+#             )
+
+#         for m in medicines_data:
+#             Medicine.objects.create(
+#                 user=user,
+#                 name=m.get('name', ''),
+#                 frequency_per_day=m.get('frequency_per_day', 1),
+#                 notes=m.get('notes', '')
+#             )
+
+#         return user
 class PatientCreateSerializer(serializers.Serializer):
-    # بيانات أساسية
     national_id = serializers.CharField(max_length=14)
     first_name = serializers.CharField(max_length=50)
     last_name = serializers.CharField(max_length=50)
     birthdate = serializers.DateField()
     height_cm = serializers.FloatField(required=False, allow_null=True)
     weight_kg = serializers.FloatField(required=False, allow_null=True)
-    blood_type = serializers.ChoiceField(choices=[
-        ('A', 'A'),
-        ('B', 'B'),
-        ('O', 'O'),
-        ('AB', 'AB'), ('AB', 'AB'),
-        ])
-
+    blood_type = serializers.ChoiceField(choices=[('A','A'),('B','B'),('O','O'),('AB','AB')])
     gender = serializers.ChoiceField(choices=[('male','male'),('female','female')])
     phone = serializers.CharField(required=False, allow_null=True)
     email = serializers.EmailField(required=False, allow_null=True)
@@ -1162,8 +1373,6 @@ class PatientCreateSerializer(serializers.Serializer):
     PRA = serializers.FloatField(required=False, allow_null=True)
     CMV_status = serializers.BooleanField(required=False, default=False)
     EBV_status = serializers.BooleanField(required=False, default=False)
-
-    # ====== Patient Profile ======
     organ = serializers.ChoiceField(choices=OrganType.choices)
     urgency_level = serializers.ChoiceField(
         choices=[('low','Low'),('medium','Medium'),('high','High'),('critical','Critical')],
@@ -1174,8 +1383,6 @@ class PatientCreateSerializer(serializers.Serializer):
     MELD_score = serializers.FloatField(required=False, allow_null=True)
     lung_severity_score = serializers.FloatField(required=False, allow_null=True)
     recipient_id = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-
-    # ====== أمراض + حساسية + أدوية ======
     chronic_diseases = serializers.ListField(
         child=serializers.DictField(), required=False, default=[]
     )
@@ -1192,6 +1399,7 @@ class PatientCreateSerializer(serializers.Serializer):
         if User.objects.filter(national_id=value).exists():
             raise serializers.ValidationError("الرقم القومي موجود بالفعل")
         return value
+    
 
     def create(self, validated_data):
         organ = validated_data.pop('organ')
@@ -1207,6 +1415,18 @@ class PatientCreateSerializer(serializers.Serializer):
         for field in profile_fields:
             if field in validated_data:
                 profile_data[field] = validated_data.pop(field)
+
+        # ✅ تصفية الحقول حسب نوع العضو
+        KIDNEY_ORGANS = {'kidney', 'kidney_right', 'kidney_left'}
+        LIVER_ORGANS  = {'liver', 'liver_lobe'}
+        LUNG_ORGANS   = {'lung_right', 'lung_lobe', 'lung_left'}
+
+        if organ not in KIDNEY_ORGANS:
+            profile_data.pop('dialysis_duration_days', None)
+        if organ not in LIVER_ORGANS:
+            profile_data.pop('MELD_score', None)
+        if organ not in LUNG_ORGANS:
+            profile_data.pop('lung_severity_score', None)
 
         password = validated_data['national_id'][-4:]
         user = User.objects.create(role='patient', **validated_data)
@@ -1243,6 +1463,11 @@ class PatientCreateSerializer(serializers.Serializer):
             )
 
         return user
+
+
+
+
+
 
 class DonorCreateSerializer(serializers.Serializer):
     national_id = serializers.CharField(max_length=14)
@@ -1299,51 +1524,61 @@ class DonorCreateSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        organ = validated_data.pop('organ')
-        chronic_diseases_data = validated_data.pop('chronic_diseases', [])
-        allergies_data = validated_data.pop('allergies', [])
-        medicines_data = validated_data.pop('medicines', [])
+            organ = validated_data.pop('organ')
+            chronic_diseases_data = validated_data.pop('chronic_diseases', [])
+            allergies_data = validated_data.pop('allergies', [])
+            medicines_data = validated_data.pop('medicines', [])
 
-        profile_fields = [
-            'donation_type', 'kdpi_score', 'donor_code','organ_full_or_partial'
-        ]
-        profile_data = {}
-        for field in profile_fields:
-            if field in validated_data:
-                profile_data[field] = validated_data.pop(field)
+            profile_fields = [
+                'donation_type', 'kdpi_score', 'donor_code', 'organ_full_or_partial'
+            ]
+            profile_data = {}
+            for field in profile_fields:
+                if field in validated_data:
+                    profile_data[field] = validated_data.pop(field)
 
-        password = validated_data['national_id'][-4:]
-        user = User.objects.create(role='donor', **validated_data)
-        user.set_password(password)
-        user.save()
+            # ✅ تصفية الحقول حسب نوع العضو
+            KIDNEY_ORGANS = {'kidney', 'kidney_right', 'kidney_left'}
+            PARTIAL_ALLOWED = {'kidney', 'kidney_right', 'kidney_left', 'liver', 'liver_lobe'}
 
-        DonorMedicalProfile.objects.create(
-            donor=user, organ_available=organ, **profile_data
-        )
+            if organ not in KIDNEY_ORGANS:
+                profile_data.pop('kdpi_score', None)
 
-        for d in chronic_diseases_data:
-            try:
-                disease = ChronicDisease.objects.get(id=d['disease_id'])
-                UserChronicDisease.objects.create(
-                    user=user, disease=disease,
-                    severity=d.get('severity', 'متوسط')
+            if organ not in PARTIAL_ALLOWED:
+                profile_data['organ_full_or_partial'] = 'full'  # إجباري full لو العضو مش بيسمح بجزئي
+
+            password = validated_data['national_id'][-4:]
+            user = User.objects.create(role='donor', **validated_data)
+            user.set_password(password)
+            user.save()
+
+            DonorMedicalProfile.objects.create(
+                donor=user, organ_available=organ, **profile_data
+            )
+
+            for d in chronic_diseases_data:
+                try:
+                    disease = ChronicDisease.objects.get(id=d['disease_id'])
+                    UserChronicDisease.objects.create(
+                        user=user, disease=disease,
+                        severity=d.get('severity', 'متوسط')
+                    )
+                except ChronicDisease.DoesNotExist:
+                    pass
+
+            for a in allergies_data:
+                Allergy.objects.create(
+                    user=user,
+                    name=a.get('name', ''),
+                    severity=a.get('severity', 'منخفض')
                 )
-            except ChronicDisease.DoesNotExist:
-                pass
 
-        for a in allergies_data:
-            Allergy.objects.create(
-                user=user,
-                name=a.get('name', ''),
-                severity=a.get('severity', 'منخفض')
-            )
+            for m in medicines_data:
+                Medicine.objects.create(
+                    user=user,
+                    name=m.get('name', ''),
+                    frequency_per_day=m.get('frequency_per_day', 1),
+                    notes=m.get('notes', '')
+                )
 
-        for m in medicines_data:
-            Medicine.objects.create(
-                user=user,
-                name=m.get('name', ''),
-                frequency_per_day=m.get('frequency_per_day', 1),
-                notes=m.get('notes', '')
-            )
-
-        return user
+            return user
