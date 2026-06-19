@@ -68,3 +68,4 @@ webdriver-manager
 websocket-client
 whitenoise
 wsproto
+supabase
