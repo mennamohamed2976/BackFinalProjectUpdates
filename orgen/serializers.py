@@ -100,7 +100,7 @@ class UnifiedLoginSerializer(serializers.Serializer):
         password = data.get("password")
 
         if not identifier or not password:
-            raise serializers.ValidationError({
+            raise AuthenticationFailed({
                 "message": "الرجاء إدخال identifier و password"
             })
 
@@ -109,12 +109,12 @@ class UnifiedLoginSerializer(serializers.Serializer):
             try:
                 ministry = Ministry.objects.get(national_id=identifier)
             except Ministry.DoesNotExist:
-                raise serializers.ValidationError({
+                raise AuthenticationFailed({
                     "message": "الوزارة غير موجودة"
                 })
 
             if not ministry.check_password(password):
-                raise serializers.ValidationError({
+                raise AuthenticationFailed({
                     "message": "كلمة مرور الوزارة غير صحيحة"
                 })
 
@@ -130,12 +130,12 @@ class UnifiedLoginSerializer(serializers.Serializer):
             try:
                 hospital = Hospital.objects.get(email=identifier)
             except Hospital.DoesNotExist:
-                raise serializers.ValidationError({
+                raise AuthenticationFailed({
                     "message": "المستشفى غير موجودة"
                 })
 
             if not hospital.check_password(password):
-                raise serializers.ValidationError({
+                raise AuthenticationFailed({
                     "message": "بيانات المستشفى غير صحيحة"
                 })
 
@@ -149,7 +149,7 @@ class UnifiedLoginSerializer(serializers.Serializer):
         # 3. User (national_id)
         user = authenticate(username=identifier, password=password)
         if not user:
-            raise serializers.ValidationError({
+            raise AuthenticationFailed({
                 "message": "بيانات المستخدم غير صحيحة"
             })
 
