@@ -2,7 +2,7 @@
 from rest_framework import viewsets, status, generics ,permissions
 from rest_framework.views import APIView
 from rest_framework.decorators import action
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError as DjangoValidationError
 from .models import *
 from .serializers import *
 from rest_framework.authtoken.models import Token
@@ -23,6 +23,7 @@ from .ai_matching import trigger_ai_matching
 import requests
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.parsers import MultiPartParser, FormParser
+
 
 
 
